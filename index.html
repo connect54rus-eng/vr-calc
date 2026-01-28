@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>VR — Калькулятор ресурсов</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0f172a">
+
+    <!-- Open Graph meta-теги для красивой карточки в Telegram, VK, Discord и т.д. -->
+    <meta property="og:title" content="VR Калькулятор ресурсов">
+    <meta property="og:description" content="Мини-приложение для расчёта стоимости ресурсов в Viking Rise. Вводите количество в млн, получайте цену в ₽ и итог.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://connect54rus-eng.github.io/vr-calculator/">
+    <meta property="og:image" content="https://connect54rus-eng.github.io/vr-calculator/icon-512.png">
+    <meta property="og:image:width" content="512">
+    <meta property="og:image:height" content="512">
+    <meta property="og:image:alt" content="Иконка VR Калькулятора ресурсов">
+
+    <!-- Twitter / X cards (для лучшей совместимости) -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="VR Калькулятор ресурсов">
+    <meta name="twitter:description" content="Мини-приложение для расчёта стоимости ресурсов в Viking Rise.">
+    <meta name="twitter:image" content="https://connect54rus-eng.github.io/vr-calculator/icon-512.png">
+
+    <!-- Поддержка Telegram Mini App (если позже привяжешь к боту) -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <style>
+        body {
+            background: #0f172a;
+            color: #e5e7eb;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            margin: 0;
+        }
+        h1 {
+            text-align: center;
+            cursor: pointer;
+            user-select: none;
+            font-size: 22px;
+            margin: 0 0 8px 0;
+        }
+        .calc {
+            max-width: 420px;
+            margin: auto;
+            background: #020617;
+            padding: 10px 20px 20px 20px;
+            border-radius: 12px;
+        }
+        label {
+            display: block;
+            margin-top: 8px;
+            margin-bottom: 4px;
+        }
+        .input-row {
+            display: flex;
+            gap: 6px;
+            margin-top: 4px;
+        }
+        .input-row input {
+            width: 70%;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 10px;
+            border: none;
+            background: #1e293b;
+            color: #fff;
+        }
+        .billion-box {
+            width: 30%;
+            background: #020617;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: #94a3b8;
+            user-select: none;
+        }
+        .row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 6px;
+        }
+        .total {
+            margin-top: 2px;
+            font-weight: bold;
+        }
+        #secretBox {
+            display: none;
+            max-width: 420px;
+            margin: 5px auto 10px;
+        }
+        #secretInput {
+            width: 100%;
+            padding: 12px 14px;
+            font-size: 16px;
+            border-radius: 10px;
+            border: 1px solid #64748b;
+            background: #111827;
+            color: #f1f5f9;
+            box-shadow:
+                0 6px 16px rgba(0, 0, 0, 0.5),
+                0 -2px 8px rgba(255, 255, 255, 0.04);
+            transition: all 0.18s ease;
+            box-sizing: border-box;
+        }
+        #secretInput:focus {
+            outline: none;
+            border-color: #94a3b8;
+            box-shadow:
+                0 8px 20px rgba(0, 0, 0, 0.55),
+                0 -2px 10px rgba(255, 255, 255, 0.06);
+            background: #172033;
+        }
+    </style>
+</head>
+<body>
+<h1 onclick="titleClick()">VR Калькулятор ресурсов</h1>
+<div id="secretBox">
+    <input id="secretInput" type="text" placeholder="Секретный код" oninput="checkSecret()">
+</div>
+<div class="calc">
+    <label>Еда (млн)</label>
+    <div class="input-row">
+        <input id="food" type="number" placeholder="Минимум 100" oninput="update()">
+        <div id="foodB" class="billion-box">0,000 млрд</div>
+    </div>
+    <label>Дерево (млн)</label>
+    <div class="input-row">
+        <input id="wood" type="number" placeholder="Минимум 100" oninput="update()">
+        <div id="woodB" class="billion-box">0,000 млрд</div>
+    </div>
+    <label>Камень (млн)</label>
+    <div class="input-row">
+        <input id="stone" type="number" placeholder="Минимум 100" oninput="update()">
+        <div id="stoneB" class="billion-box">0,000 млрд</div>
+    </div>
+    <label>Золото (млн)</label>
+    <div class="input-row">
+        <input id="gold" type="number" placeholder="Минимум 100" oninput="update()">
+        <div id="goldB" class="billion-box">0,000 млрд</div>
+    </div>
+    <div class="row"><span>Еда</span><span id="foodPrice">0 ₽</span></div>
+    <div class="row"><span>Дерево</span><span id="woodPrice">0 ₽</span></div>
+    <div class="row"><span>Камень</span><span id="stonePrice">0 ₽</span></div>
+    <div class="row"><span>Золото</span><span id="goldPrice">0 ₽</span></div>
+    <hr style="border:0; border-top:1px solid #334155; margin:16px 0 12px 0;">
+    <div class="row total">
+        <span>Итого</span>
+        <span id="totalPrice">0 ₽</span>
+    </div>
+</div>
+<div style="max-width:420px; margin:6px auto 0;">
+    <input
+      id="nickname"
+      type="text"
+      placeholder="Введите ваш ник (кому доставлять ресурсы)"
+      style="width:100%; padding:10px; font-size:16px; border-radius:8px; border:none; background:#1e293b; color:#fff;"
+    >
+</div>
+<script>
+let pricesNormal = { food:300, wood:300, stone:300, gold:500 };
+let pricesKing   = { food:200, wood:200, stone:200, gold:400 };
+let prices = pricesNormal;
+
+function formatPrice(num) {
+    return Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+}
+
+function toBillion(v) {
+    let billions = v / 1000;
+    let formatted = billions.toFixed(3).replace('.', ',');
+    return formatted + " млрд";
+}
+
+function calc(v, p) {
+    return v >= 100 ? (v / 100) * p : 0;
+}
+
+function update() {
+    let fv = +food.value || 0;
+    let wv = +wood.value || 0;
+    let sv = +stone.value || 0;
+    let gv = +gold.value || 0;
+
+    foodB.innerText  = toBillion(fv);
+    woodB.innerText  = toBillion(wv);
+    stoneB.innerText = toBillion(sv);
+    goldB.innerText  = toBillion(gv);
+
+    let f = calc(fv, prices.food);
+    let w = calc(wv, prices.wood);
+    let s = calc(sv, prices.stone);
+    let g = calc(gv, prices.gold);
+
+    foodPrice.innerText  = formatPrice(f) + " ₽";
+    woodPrice.innerText  = formatPrice(w) + " ₽";
+    stonePrice.innerText = formatPrice(s) + " ₽";
+    goldPrice.innerText  = formatPrice(g) + " ₽";
+    totalPrice.innerText = formatPrice(f + w + s + g) + " ₽";
+}
+
+let clicks = 0;
+function titleClick() {
+    clicks++;
+    if (clicks === 5) {
+        secretBox.style.display = "block";
+    }
+}
+
+function checkSecret() {
+    if (secretInput.value === "od1n") {
+        prices = pricesKing;
+        secretBox.style.display = "none";
+        secretInput.value = "";
+        update();
+    }
+}
+
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js');
+}
+
+// Поддержка Telegram Mini App (если позже привяжешь к боту)
+if (window.Telegram && Telegram.WebApp) {
+    Telegram.WebApp.ready();
+    Telegram.WebApp.expand();
+    // Опционально: адаптация цвета под тему Telegram
+    document.body.style.backgroundColor = Telegram.WebApp.themeParams.bg_color || '#0f172a';
+}
+</script>
+
+<div style="text-align:center; margin-top:10px; font-size:14px; color:#aaa;">
+📸 Для отправки заказа сделайте скриншот и отправьте
+<a href="https://t.me/ivanka54" target="_blank" style="color:white; font-weight:bold; text-decoration:underline;">
+менеджеру
+</a> 📸
+</div>
+</body>
+</html>
