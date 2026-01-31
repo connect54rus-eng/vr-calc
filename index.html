@@ -126,22 +126,22 @@
 <div class="calc">
     <label>Еда (млн)</label>
     <div class="input-row">
-        <input id="food" type="number" placeholder="Минимум 100" oninput="update()">
+        <input id="food" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="Минимум 50" oninput="update()">
         <div id="foodB" class="billion-box">0,000 млрд</div>
     </div>
     <label>Дерево (млн)</label>
     <div class="input-row">
-        <input id="wood" type="number" placeholder="Минимум 100" oninput="update()">
+        <input id="wood" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="Минимум 50" oninput="update()">
         <div id="woodB" class="billion-box">0,000 млрд</div>
     </div>
     <label>Камень (млн)</label>
     <div class="input-row">
-        <input id="stone" type="number" placeholder="Минимум 100" oninput="update()">
+        <input id="stone" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="Минимум 50" oninput="update()">
         <div id="stoneB" class="billion-box">0,000 млрд</div>
     </div>
     <label>Золото (млн)</label>
     <div class="input-row">
-        <input id="gold" type="number" placeholder="Минимум 100" oninput="update()">
+        <input id="gold" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="Минимум 50" oninput="update()">
         <div id="goldB" class="billion-box">0,000 млрд</div>
     </div>
     <div class="row"><span>Еда</span><span id="foodPrice">0 ₽</span></div>
@@ -178,7 +178,7 @@ function toBillion(v) {
 }
 
 function calc(v, p) {
-    return v >= 100 ? (v / 100) * p : 0;
+    return v >= 50 ? (v / 100) * p : 0;
 }
 
 function update() {
@@ -241,6 +241,7 @@ if (window.Telegram && Telegram.WebApp) {
 </div>
 </body>
 </html>
+
 
 
 
